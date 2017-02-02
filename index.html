@@ -8,10 +8,14 @@
     <p>BLE</p>
     <p><form><button id="startNotifications">Start notifications</button></form></p>
     <script>
+      var XAxisCharacteristic, YAxisCharacteristic, ZAxisCharacteristic;
+
       function beginBLE(){
         let serviceUuid = "a8dd0000-0574-48dd-b570-21b2db19807e";
 
-        let characteristicUuid = "a8dd0001-0574-48dd-b570-21b2db19807e";
+        let XAxisUuid = "a8dd0001-0574-48dd-b570-21b2db19807e";
+        let YAxisUuid = "a8dd0002-0574-48dd-b570-21b2db19807e";
+        let ZAxisUuid = "a8dd0003-0574-48dd-b570-21b2db19807e";
         let filters = [];
         filters.push({services: [serviceUuid]});
         navigator.bluetooth.requestDevice({filters: filters})
@@ -28,8 +32,38 @@
             return service.getCharacteristics();
           })
           .then(characteristics => {
-            console.log(characteristics);
+            for (var i in characteristics) {
+              if(characteristics[i].uuid === XAxisUuid){
+                XAxisCharacteristic = characteristics[i];
+                XAxisCharacteristic.startNotifications().then(_ => {
+                  console.log("XAxis notification started");
+                  XAxisCharacteristic.addEventListener('characteristicvaluechanged', handleNotifications);
+                });
+              }
+              else if(characteristics[i].uuid === YAxisUuid){
+                YAxisCharacteristic = characteristics[i];
+                YAxisCharacteristic.startNotifications().then(_ => {
+                  console.log("YAxis notification started");
+                  YAxisCharacteristic.addEventListener('characteristicvaluechanged', handleNotifications);
+                });
+              }
+              else if(characteristics[i].uuid === ZAxisUuid){
+                ZAxisCharacteristic = characteristics[i];
+                ZAxisCharacteristic.startNotifications().then(_ => {
+                  console.log("ZAxis notification started");
+                  ZAxisCharacteristic.addEventListener('characteristicvaluechanged', handleNotifications);
+                });
+              }
+            }
           })
+          .catch(error =>{
+            console.log("Error: " + error);
+          });
+      }
+      function handleNotifications(event) {
+        let value = event.target.value;
+        // console.log(event.target.uuid);
+        console.log(event.target.value.getFloat32());
       }
       document.querySelector('#startNotifications').addEventListener('click', function(event) {
         event.stopPropagation();
