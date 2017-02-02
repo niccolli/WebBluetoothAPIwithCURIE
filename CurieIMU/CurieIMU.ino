@@ -18,7 +18,7 @@ void setup() {
   CurieIMU.setAccelerometerRange(2);
 
   // Setting for BLE device
-  blePeripheral.setLocalName("IMUTestSketch");
+  blePeripheral.setLocalName("🍣");
   blePeripheral.setAdvertisedServiceUuid(IMUService.uuid());
   blePeripheral.addAttribute(IMUService);
   blePeripheral.addAttribute(IMUAXChar);
