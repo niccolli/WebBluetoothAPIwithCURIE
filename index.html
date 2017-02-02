@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Web Bluetooth API Testing</title>
+  </head>
+  <body>
+    <p>BLE</p>
+    <p><form><button id="startNotifications">Start notifications</button></form></p>
+    <script>
+      function beginBLE(){
+        let serviceUuid = "a8dd0000-0574-48dd-b570-21b2db19807e";
+
+        let characteristicUuid = "a8dd0001-0574-48dd-b570-21b2db19807e";
+        let filters = [];
+        filters.push({services: [serviceUuid]});
+        navigator.bluetooth.requestDevice({filters: filters})
+          .then(device => {
+            console.log("Connecting to device");
+            return device.gatt.connect();
+          })
+          .then(server => {
+            console.log('Getting Service...');
+            return server.getPrimaryService(serviceUuid);
+          })
+          .then(service => {
+            console.log('Getting Characteristic...');
+            return service.getCharacteristics();
+          })
+          .then(characteristics => {
+            console.log(characteristics);
+          })
+      }
+      document.querySelector('#startNotifications').addEventListener('click', function(event) {
+        event.stopPropagation();
+        event.preventDefault();
+        console.log("Begin BLE scanning");
+        beginBLE();
+      });
+    </script>
+  </body>
+</html>
