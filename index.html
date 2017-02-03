@@ -7,15 +7,28 @@
   <body>
     <p>BLE</p>
     <p><form><button id="startNotifications">Start notifications</button></form></p>
+    <div id="accelerometer" style="width:100%; height:200px;"></div>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script>
       var XAxisCharacteristic, YAxisCharacteristic, ZAxisCharacteristic;
+      var ax, ay, az;
+      let serviceUuid = "a8dd0000-0574-48dd-b570-21b2db19807e";
+      let XAxisUuid = "a8dd0001-0574-48dd-b570-21b2db19807e";
+      let YAxisUuid = "a8dd0002-0574-48dd-b570-21b2db19807e";
+      let ZAxisUuid = "a8dd0003-0574-48dd-b570-21b2db19807e";
+
+      google.charts.load('current', {'packages':['line']});
+      google.charts.setOnLoadCallback(drawAccelChart);
+      var accOptions = {
+        title: '',
+        // curveType: 'function',
+        legend: { position: 'bottom' },
+        vAxis: { minValue: -1000, maxValue: 1000 },
+
+      };
+      var gaccel, chart;
 
       function beginBLE(){
-        let serviceUuid = "a8dd0000-0574-48dd-b570-21b2db19807e";
-
-        let XAxisUuid = "a8dd0001-0574-48dd-b570-21b2db19807e";
-        let YAxisUuid = "a8dd0002-0574-48dd-b570-21b2db19807e";
-        let ZAxisUuid = "a8dd0003-0574-48dd-b570-21b2db19807e";
         let filters = [];
         filters.push({services: [serviceUuid]});
         navigator.bluetooth.requestDevice({filters: filters})
@@ -61,9 +74,25 @@
           });
       }
       function handleNotifications(event) {
-        // console.log(event.target.uuid);
-        // console.log(event.target.value);
-        console.log(event.target.value.getFloat32(0,true));
+        // console.log(event.target.value.getFloat32(0,true));
+        if(event.target.uuid === XAxisUuid){
+          ax = event.target.value.getFloat32(0,true);
+        } else if(event.target.uuid === YAxisUuid){
+          ay = event.target.value.getFloat32(0,true);
+        } else if(event.target.uuid === ZAxisUuid){
+          az = event.target.value.getFloat32(0,true);
+        }
+
+        // var gaccel = new google.visualization.DataTable();
+
+        gaccel.addRow([new Date(), ax, ay, az]);
+        console.log(ax +' '+ ay +' '+ az);
+        if(gaccel.getNumberOfRows() > 100){
+          gaccel.removeRow(0);
+        }
+        // chart = new google.charts.Line(document.getElementById('accelerometer'));
+        chart.draw(gaccel, accOptions);
+
       }
       document.querySelector('#startNotifications').addEventListener('click', function(event) {
         event.stopPropagation();
@@ -71,6 +100,40 @@
         console.log("Begin BLE scanning");
         beginBLE();
       });
+
+      // google.charts.load('current', {'packages':['line']});
+      // google.charts.setOnLoadCallback(drawAccelChart);
+
+      function drawAccelChart() {
+        gaccel = new google.visualization.DataTable();
+        gaccel.addColumn('datetime', 'Time');
+        gaccel.addColumn('number', 'X');
+        gaccel.addColumn('number', 'Y');
+        gaccel.addColumn('number', 'Z');
+        gaccel.addRow([new Date(), 1, 1, 1]);
+
+        chart = new google.charts.Line(document.getElementById('accelerometer'));
+
+        chart.draw(gaccel, accOptions);
+
+        // socket.on('Accel', function(msg){
+        //   // console.log('Accel: ' + msg);
+        //   var data = msg.split(' ');
+        //   for(var i = 0; i < data.length; i++){
+        //     data[i] = parseInt(data[i]);
+        //   }
+        //
+        //   gaccel.addRow([new Date(), data[0], data[1], data[2]]);
+        //   if(gaccel.getNumberOfRows() > 100){
+        //     gaccel.removeRow(0);
+        //   }
+        //   chart.draw(gaccel, accOptions);
+        // });
+      }
+
+
+      var count = 0;
+
     </script>
   </body>
 </html>
