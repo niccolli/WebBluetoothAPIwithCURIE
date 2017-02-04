@@ -29,6 +29,7 @@
       var gaccel, chart;
 
       function beginBLE(){
+        // 接続するデバイスをある程度絞ってからAdvertisingが動作する
         let filters = [];
         filters.push({services: [serviceUuid]});
         navigator.bluetooth.requestDevice({filters: filters})
@@ -41,10 +42,12 @@
             return server.getPrimaryService(serviceUuid);
           })
           .then(service => {
+            // Serviceが複数ある場合はservicesで配列となる
             console.log('Getting Characteristic...');
             return service.getCharacteristics();
           })
           .then(characteristics => {
+            // characteristicsが単数の場合はcharacteristicとなる
             for (var i in characteristics) {
               if(characteristics[i].uuid === XAxisUuid){
                 XAxisCharacteristic = characteristics[i];
@@ -74,7 +77,6 @@
           });
       }
       function handleNotifications(event) {
-        // console.log(event.target.value.getFloat32(0,true));
         if(event.target.uuid === XAxisUuid){
           ax = event.target.value.getFloat32(0,true);
         } else if(event.target.uuid === YAxisUuid){
@@ -83,14 +85,11 @@
           az = event.target.value.getFloat32(0,true);
         }
 
-        // var gaccel = new google.visualization.DataTable();
-
         gaccel.addRow([new Date(), ax, ay, az]);
         console.log(ax +' '+ ay +' '+ az);
         if(gaccel.getNumberOfRows() > 100){
           gaccel.removeRow(0);
         }
-        // chart = new google.charts.Line(document.getElementById('accelerometer'));
         chart.draw(gaccel, accOptions);
 
       }
@@ -100,9 +99,6 @@
         console.log("Begin BLE scanning");
         beginBLE();
       });
-
-      // google.charts.load('current', {'packages':['line']});
-      // google.charts.setOnLoadCallback(drawAccelChart);
 
       function drawAccelChart() {
         gaccel = new google.visualization.DataTable();
@@ -115,24 +111,7 @@
         chart = new google.charts.Line(document.getElementById('accelerometer'));
 
         chart.draw(gaccel, accOptions);
-
-        // socket.on('Accel', function(msg){
-        //   // console.log('Accel: ' + msg);
-        //   var data = msg.split(' ');
-        //   for(var i = 0; i < data.length; i++){
-        //     data[i] = parseInt(data[i]);
-        //   }
-        //
-        //   gaccel.addRow([new Date(), data[0], data[1], data[2]]);
-        //   if(gaccel.getNumberOfRows() > 100){
-        //     gaccel.removeRow(0);
-        //   }
-        //   chart.draw(gaccel, accOptions);
-        // });
       }
-
-
-      var count = 0;
 
     </script>
   </body>
